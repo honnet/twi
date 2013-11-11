@@ -69,6 +69,7 @@ http://youtu.be/sgKb9N6MPIM
 
 http://www.aliexpress.com/snapshot/252001193.html
 
+
 Enjoy!
 ------
 
@@ -79,3 +80,13 @@ Drix(a)TangibleDisplay.com
 
 May the force be with you!
 
+
+
+License
+-------
+
+![Creative Commons NonCommercial License](http://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png)
+
+
+This project is released under a Creative Commons, Attribution-NonCommercial-ShareAlike, Version 3.0 License:
+http://creativecommons.org/licenses/by-nc-sa/3.0
