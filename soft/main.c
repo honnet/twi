@@ -1,18 +1,27 @@
-// simple blink test (on all pins)
-
+#include "simple_uart.h"
+#include "boards.h"
 #include "nrf_delay.h"
-#include "nrf_gpio.h"
 
-int main(void) {
-    nrf_gpio_range_cfg_output(0,31);            // set all pins as output
-    uint8_t reg_out8 = 0;                       // set all pins at 0
+int main(void)
+{
+    simple_uart_config(RTS_PIN_NUMBER, TX_PIN_NUMBER, CTS_PIN_NUMBER, RX_PIN_NUMBER, false);
+    simple_uart_putstring((const uint8_t *)" \nStart:\n");
 
-    for(;;) {
-        int i;
-        for (i = 0; i < 4; i++)
-            nrf_gpio_port_write(i, reg_out8);   // set port i bits
-        reg_out8 = ~reg_out8;                   // toggle all bits
+    while(true)
+    {
+        uint8_t cr = simple_uart_get();
 
-        nrf_delay_ms(50);
+        if (cr >= 'A' && cr <= 'z') {
+            simple_uart_put(cr);
+            simple_uart_put('\n');
+
+            if(cr == 'q' || cr == 'Q')
+            {
+                simple_uart_putstring((const uint8_t *)" \nExit!\n");
+                for(;;);
+            }
+        }
+        nrf_delay_ms(10);
     }
 }
+

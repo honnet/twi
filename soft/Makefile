@@ -41,6 +41,7 @@ LFLAGS += $(patsubst %, -T%, $(TDIRS))
 SRC  = main.c
 SRC += $(NRF51_SRC)/templates/system_nrf51.c
 SRC += $(NRF51_SRC)/nrf_delay/nrf_delay.c
+SRC += $(NRF51_SRC)/simple_uart/simple_uart.c
 
 ASSEMBLY_SRC += $(NRF51_SRC)/templates/gcc/gcc_startup_nrf51.s
 
