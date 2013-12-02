@@ -1,6 +1,8 @@
 Welcome !
 =========
 
+![twi](https://raw.github.com/honnet/twi/master/twi.png)
+
 What?
 -----
 
