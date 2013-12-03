@@ -36,12 +36,12 @@ http://www.funwithelectronics.com/?id=168
 
 A few steps might no work when following this tutorial, here are a few solutions:
 
-1) It might not be useful to download the Mentor toolchain, it is incomplete.
+**1)** It might not be useful to download the Mentor toolchain, it is incomplete.
 Instead, the one Linaro one can be used (from the official ARM developers):
 
 https://launchpad.net/gcc-arm-embedded
 
-2) If you miss the Nordic files you can use git to travel in the past:
+**2)** If you miss the Nordic files you can use git to travel in the past:
 
 https://github.com/Sproutling/nRF51822-OSX-Sample
 
@@ -49,15 +49,40 @@ It won't be the latest version but you should find what you need.
 The nrf51 SDK install doesn't always work with wine. A Windows XP in virtualbox
 doesn't alway help but it works with a real windows (vista for example).
 
-3) The linker script used in the tuto's makefile is supposed to be given by
+**3)** The linker script used in the tuto's makefile is supposed to be given by
 Nordic but it doesn't seem to exist anymore (with this name) so this one can be
 used: `gcc_nrf51_blank_xxaa.ld`
 
-4) You have to define your exact CPU such as `NRF51422_QFAA_C0` in your CFLAGS
+**4)** You have to define your exact CPU such as `NRF51422_QFAA_C0` in your CFLAGS
 otherwise it won't compile compile (but you might be using another kind of CPU).
 
-5) In Ubuntu, to be able to use the segger script, you might need to install
+**5)** In Ubuntu, to be able to use the segger script, you might need to install
 `lib32readline5` even if you use a 64 bits OS.
+
+**6)** Known issues:
+
+**a)** If an error such as the following happens, you might need a 32bit verion of libusb:
+
+    ./JLinkExe: error while loading shared libraries: libusb-0.1.so.4: cannot open shared object file: No such file or directory
+
+This command might help finding the culprit:
+
+    apt-file search libusb-0.1.so.4
+
+The following should solve the problem:
+
+    apt-get install libusb-0.1-4:i386
+
+
+**b)** Similarly, if you get this error:
+
+    ./JLinkExe: error while loading shared libraries: libjlinkarm.so.4: cannot open shared object file: No such file or directory
+
+The following should solve the problem:
+
+    export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+
+In general `ldd /opt/JLink/JLinkExe`, should help finding which libraries are missing (adapt your path).
 
 
 Bonus!
@@ -81,7 +106,6 @@ to ask if you need any help:
 Drix(a)TangibleDisplay.com
 
 May the force be with you!
-
 
 
 License
