@@ -11,7 +11,7 @@ and an ARM-BLE SOC made by Nordic Semi, the nRF51822.
 This repository contains the software to program this CPU, and the PCB can be
 found here:
 
-https://upverter.com/honnet/0e8141d8154cb633/twi
+https://upverter.com/honnet
 
 
 How?
