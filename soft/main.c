@@ -1,6 +1,11 @@
 #include "simple_uart.h"
-#include "boards.h"
+#include "board.h"
 #include "nrf_delay.h"
+
+#define STRINGIFY(x) #x
+#define STR(x) STRINGIFY(x)
+#pragma message "TX_PIN_NUMBER=" STR(TX_PIN_NUMBER)
+#pragma message "RX_PIN_NUMBER=" STR(RX_PIN_NUMBER)
 
 int main(void)
 {
