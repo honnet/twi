@@ -69,7 +69,7 @@ main.hex: main.out
 upload: all
 	@echo "\n Uploading file to MCU: "
 	sed  's#\[\[--filename--\]\]#$(PWD)/main.bin#' segger/burn-template.seg > burn.seg
-	./segger/segger.sh $(PWD)/burn.seg
+	./segger/segger.sh $(PWD)/burn.seg || echo Done.
 
 clean:
 	rm -f *.o *.out *.hex *.seg *.map *.bin *.hex
