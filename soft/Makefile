@@ -22,7 +22,7 @@ CFLAGS  = -mcpu=$(CPU)
 CFLAGS += -mthumb
 CFLAGS += $(patsubst %,-D%, $(DEFINE))
 CFLAGS += $(patsubst %,-I%, $(INCLUDEDIRS))
-CFLAGS += -Wall
+CFLAGS += -Wall -std=gnu99
 
 # For the Linker stage
 LDIRS  = /usr/arm-none-eabi/lib/armv6-m
