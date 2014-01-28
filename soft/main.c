@@ -26,12 +26,12 @@ int main(void)
 
     // initialize I2C:
     if (!twi_master_init())
-        for(;; nrf_gpio_pin_toggle(LED), nrf_delay_ms(50));     // quick blink if error
+        for(;; nrf_gpio_pin_toggle(LED), nrf_delay_ms(200));     // quick blink if error
 
     // initialize IMU:
     nrf_delay_ms(4); // time needed to power up the IMU
     if (!mpu6050_init(DEVADR))
-        for(;; nrf_gpio_pin_toggle(LED), nrf_delay_ms(150));    // less quick blink if error
+        for(;; nrf_gpio_pin_toggle(LED), nrf_delay_ms(600));    // less quick blink if error
 
     while(true) {
         const uint8_t to = 10; // ms
@@ -41,6 +41,11 @@ int main(void)
                 simple_uart_putstring((const uint8_t *)"Received: ");
                 simple_uart_put(cr);
                 simple_uart_putstring((const uint8_t *)"\r\n");
+
+                for (int i=0; i<6; i++) {
+                    nrf_gpio_pin_toggle(LED);
+                    nrf_delay_ms(30);
+                }
             }
         }
 
@@ -49,7 +54,7 @@ int main(void)
 
             for (int i=0; i<4; i++) {
                 nrf_gpio_pin_toggle(LED);
-                nrf_delay_ms(100);
+                nrf_delay_ms(90);
             }
         }
     }
