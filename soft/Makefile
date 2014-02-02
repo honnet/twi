@@ -14,6 +14,7 @@ INCLUDEDIRS = $(NRF51_INCLUDE)
 INCLUDEDIRS += $(NRF51_INCLUDE)/gcc
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/twi_sw_master_example
 INCLUDEDIRS += $(NRF51_INCLUDE)/ext_sensors #TODO copy the 2 defines from twi_sw_master_example in board.h !!
+INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example
 
 DEFINE  = BOARD_PCA10001
 DEFINE += NRF51
@@ -46,6 +47,7 @@ SRC += $(NRF51_SRC)/nrf_delay/nrf_delay.c
 SRC += $(NRF51_SRC)/simple_uart/simple_uart.c
 SRC += $(NRF51_SRC)/twi_master/twi_hw_master.c
 SRC += $(NRF51_SRC)/ext_sensors/mpu6050/mpu6050.c
+SRC += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example/radio_config.c
 
 ASSEMBLY_SRC += $(NRF51_SRC)/templates/gcc/gcc_startup_nrf51.s
 
