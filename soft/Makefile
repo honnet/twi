@@ -77,6 +77,10 @@ upload: all
 	sed  's#\[\[--filename--\]\]#$(PWD)/main.bin#' segger/burn-template.seg > burn.seg
 	./segger/segger.sh $(PWD)/burn.seg || echo Done.
 
+erase-all:
+	@/bin/echo -e "device nrf51822\nw4 4001e504 2\nw4 4001e50c 1\nw4 4001e514 1\nr\nexit\n" > erase-all.jlink
+	JLinkExe -if swd -speed 1000 erase-all.jlink || echo Done
+
 clean:
 	rm -f *.o *.out *.hex *.seg *.map *.bin *.hex
 
