@@ -21,11 +21,11 @@ How?
 
 Before testing on the custom PCB a cheap dev board can be used:
 
-http://www.aliexpress.com/snapshot/251687009.html
+http://www.aliexpress.com/snapshot/251611169.html
 
 ...this cheap programmer is fine too:
 
-http://www.aliexpress.com/snapshot/251611169.html
+http://www.aliexpress.com/snapshot/251687009.html
 
 Once everything is gathered, most of the nRF51822 bringup procedure can be made
 thanks to this tuto:
