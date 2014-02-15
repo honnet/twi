@@ -1,6 +1,6 @@
 # Adapted from: stackoverflow.com/questions/16443790/makefile-for-nrf51sdk
 
-CC            := /usr/bin/arm-none-eabi-gcc
+CC            := /usr/bin/arm-none-eabi-g++
 OBJCOPY       := /usr/bin/arm-none-eabi-objcopy
 
 NRF51_SDK     := /opt/nrf51sdk
