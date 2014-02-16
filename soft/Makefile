@@ -15,6 +15,8 @@ INCLUDEDIRS += $(NRF51_INCLUDE)/gcc
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/twi_sw_master_example
 INCLUDEDIRS += $(NRF51_INCLUDE)/ext_sensors #TODO copy the 2 defines from twi_sw_master_example in board.h !!
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example
+INCLUDEDIRS += ./I2Cdev
+INCLUDEDIRS += ./MPU9150
 
 DEFINE  = BOARD_PCA10001
 DEFINE += NRF51
@@ -25,7 +27,7 @@ CFLAGS  = -mcpu=$(CPU)
 CFLAGS += -mthumb
 CFLAGS += $(patsubst %,-D%, $(DEFINE))
 CFLAGS += $(patsubst %,-I%, $(INCLUDEDIRS))
-CFLAGS += -Wall -std=gnu99
+CFLAGS += -Wall
 
 # For the Linker stage
 LDIRS  = /usr/arm-none-eabi/lib/armv6-m
@@ -48,6 +50,8 @@ SRC += $(NRF51_SRC)/simple_uart/simple_uart.c
 SRC += $(NRF51_SRC)/twi_master/twi_hw_master.c
 SRC += $(NRF51_SRC)/ext_sensors/mpu6050/mpu6050.c
 SRC += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example/radio_config.c
+SRC += ./I2Cdev/I2Cdev.c
+SRC += ./MPU9150/MPU9150.c
 
 ASSEMBLY_SRC += $(NRF51_SRC)/templates/gcc/gcc_startup_nrf51.s
 

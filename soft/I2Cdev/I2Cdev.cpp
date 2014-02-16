@@ -25,8 +25,7 @@ THE SOFTWARE.
 */
 
 #include "I2Cdev.h"
-#include "twi_master.h"
-
+#include "/opt/nrf51sdk/Nordic/nrf51822/Include/twi_master.h"
 
 /** Default constructor. */
 I2Cdev::I2Cdev() {
