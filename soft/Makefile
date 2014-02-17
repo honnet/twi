@@ -27,7 +27,7 @@ CFLAGS  = -mcpu=$(CPU)
 CFLAGS += -mthumb
 CFLAGS += $(patsubst %,-D%, $(DEFINE))
 CFLAGS += $(patsubst %,-I%, $(INCLUDEDIRS))
-CFLAGS += -Wall -fpermissive # TODO: remove ?
+CFLAGS += -Wall
 
 # For the Linker stage
 LDIRS  = /usr/arm-none-eabi/lib/armv6-m
@@ -38,7 +38,7 @@ TDIRS  = $(NRF51_SRC)/templates/gcc/gcc_nrf51_blank_xxaa.ld
 LFLAGS  = -mcpu=$(CPU)
 LFLAGS += -mthumb
 LFLAGS += -mabi=aapcs
-LFLAGS += -Wall -fpermissive # TODO: remove ?
+LFLAGS += -Wall
 LFLAGS += $(patsubst %, -L%, $(LDIRS))
 LFLAGS += $(patsubst %, -T%, $(TDIRS))
 
@@ -55,7 +55,7 @@ SRC += ./I2Cdev/I2Cdev.cpp
 
 ASSEMBLY_SRC += $(NRF51_SRC)/templates/gcc/gcc_startup_nrf51.s
 
-OBJ  = $(SRC:.c=.o) $(SRC:.cpp=.o) $(ASSEMBLY_SRC:.s=.o)
+OBJ = $(ASSEMBLY_SRC:.s=.o) $(addsuffix .o,$(basename $(SRC)))
 
 .PHONY: all build upload clean begin end gcc_version
 

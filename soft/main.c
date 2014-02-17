@@ -26,6 +26,7 @@
 #include "radio_config.h"
 #include "nrf_gpio.h"
 #include "board.h"
+#include "nrf_delay.h"
 
 static uint8_t packet[4];  ///< Packet to transmit
 
