@@ -22,32 +22,43 @@
 *
 */
 
+#include <stdio.h>
 #include <stdint.h>
 #include "radio_config.h"
 #include "nrf_gpio.h"
 #include "board.h"
 #include "nrf_delay.h"
+#include "simple_uart.h"
+#include "MPU9150.h"
 
 static uint8_t packet[4];  ///< Packet to transmit
+
+MPU9150 accelGyroMag;
+int16_t a[3], g[3], m[3];
 
 void init(void)
 {
   nrf_gpio_cfg_output(LED);
 
-  /* Start 16 MHz crystal oscillator */
-  NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
-  NRF_CLOCK->TASKS_HFCLKSTART = 1;
+  accelGyroMag.initialize();
+  simple_uart_putstring( accelGyroMag.testConnection() ?
+                        (const uint8_t *)"MPU9150 connection successful" :
+                        (const uint8_t *)"MPU9150 connection failed" );
 
-  /* Wait for the external oscillator to start up */
-  while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0)
-  {
-  }
+///* Start 16 MHz crystal oscillator */
+//NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
+//NRF_CLOCK->TASKS_HFCLKSTART = 1;
 
-  // Set radio configuration parameters
-  radio_configure();
+///* Wait for the external oscillator to start up */
+//while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0)
+//{
+//}
 
-  // Set payload pointer
-  NRF_RADIO->PACKETPTR = (uint32_t)packet;
+//// Set radio configuration parameters
+//radio_configure();
+
+//// Set payload pointer
+//NRF_RADIO->PACKETPTR = (uint32_t)packet;
 }
 
 /**
@@ -57,16 +68,24 @@ void init(void)
 int main(void)
 {
   init();
-  nrf_gpio_pin_set(LED);
 
   char b = 0;
   while(1)
   {
+    accelGyroMag.getMotion9(&a[0], &a[1], &a[2], &g[0], &g[1], &g[2], &m[0], &m[1], &m[2]);
+
+    char buf[8]; // max = 2**16 = 65536
+    for (int i=0; i<3; i++) {
+        sprintf(buf, "%d\t" , a[i]);
+        simple_uart_putstring((const uint8_t *)buf);
+    }
+    simple_uart_putstring((const uint8_t *)"\r\n");
+
     if (b)
       nrf_gpio_pin_set(LED);
     else
       nrf_gpio_pin_clear(LED);
-
+/*
     // Place the read character in the payload, enable the radio and
     // send the packet:
     packet[0] = b ? '1' : '0';
@@ -86,7 +105,7 @@ int main(void)
     while(NRF_RADIO->EVENTS_DISABLED == 0U)
     {
     }
-
+*/
     b = !b;
     nrf_delay_ms(90);
   }
