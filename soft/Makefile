@@ -15,8 +15,8 @@ INCLUDEDIRS += $(NRF51_INCLUDE)/gcc
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/twi_sw_master_example
 INCLUDEDIRS += $(NRF51_INCLUDE)/ext_sensors #TODO copy the 2 defines from twi_sw_master_example in board.h !!
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example
-INCLUDEDIRS += ./I2Cdev
 INCLUDEDIRS += ./MPU9150
+INCLUDEDIRS += ./I2Cdev
 
 DEFINE  = BOARD_PCA10001
 DEFINE += NRF51
@@ -27,7 +27,7 @@ CFLAGS  = -mcpu=$(CPU)
 CFLAGS += -mthumb
 CFLAGS += $(patsubst %,-D%, $(DEFINE))
 CFLAGS += $(patsubst %,-I%, $(INCLUDEDIRS))
-CFLAGS += -Wall
+CFLAGS += -Wall -fpermissive # TODO: remove ?
 
 # For the Linker stage
 LDIRS  = /usr/arm-none-eabi/lib/armv6-m
@@ -38,7 +38,7 @@ TDIRS  = $(NRF51_SRC)/templates/gcc/gcc_nrf51_blank_xxaa.ld
 LFLAGS  = -mcpu=$(CPU)
 LFLAGS += -mthumb
 LFLAGS += -mabi=aapcs
-LFLAGS += -Wall
+LFLAGS += -Wall -fpermissive # TODO: remove ?
 LFLAGS += $(patsubst %, -L%, $(LDIRS))
 LFLAGS += $(patsubst %, -T%, $(TDIRS))
 
@@ -48,14 +48,14 @@ SRC += $(NRF51_SRC)/templates/system_nrf51.c
 SRC += $(NRF51_SRC)/nrf_delay/nrf_delay.c
 SRC += $(NRF51_SRC)/simple_uart/simple_uart.c
 SRC += $(NRF51_SRC)/twi_master/twi_hw_master.c
-SRC += $(NRF51_SRC)/ext_sensors/mpu6050/mpu6050.c
+SRC += $(NRF51_SRC)/ext_sensors/mpu6050/mpu6050.c # TODO remove !!
 SRC += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example/radio_config.c
-SRC += ./I2Cdev/I2Cdev.c
-SRC += ./MPU9150/MPU9150.c
+SRC += ./MPU9150/MPU9150.cpp
+SRC += ./I2Cdev/I2Cdev.cpp
 
 ASSEMBLY_SRC += $(NRF51_SRC)/templates/gcc/gcc_startup_nrf51.s
 
-OBJ  = $(SRC:.c=.o) $(ASSEMBLY_SRC:.s=.o)
+OBJ  = $(SRC:.c=.o) $(SRC:.cpp=.o) $(ASSEMBLY_SRC:.s=.o)
 
 .PHONY: all build upload clean begin end gcc_version
 
@@ -107,6 +107,10 @@ gcc_version:
 
 # General Rule for compiling C source files
 %.o : %.c
+	@echo "\n Compiling: " $(notdir $<)
+	$(CC) $(CFLAGS) -c $< -o $(notdir $@)
+
+%.o : %.cpp
 	@echo "\n Compiling: " $(notdir $<)
 	$(CC) $(CFLAGS) -c $< -o $(notdir $@)
 

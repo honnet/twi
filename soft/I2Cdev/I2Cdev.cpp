@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 
 #include "I2Cdev.h"
-#include "/opt/nrf51sdk/Nordic/nrf51822/Include/twi_master.h"
+#include "/opt/nrf51sdk/Nordic/nrf51822/Include/twi_master.h" // TODO FIX MAKEFILE !!!!
 
 /** Default constructor. */
 I2Cdev::I2Cdev() {
@@ -145,7 +145,7 @@ int8_t I2Cdev::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16
  */
 int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout) {
     int8_t count = 0;
-    bool success = Fastwire::readBuf(devAddr << 1, regAddr, data, length);
+    bool success = readBuf(devAddr << 1, regAddr, data, length);
     if (success) {
         count = length; // success
     } else {
@@ -165,18 +165,16 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
 int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout) { // TODO REMOVE TIMEOUT
     int8_t count = 0;
 
-        // Fastwire library
-        // no loop required for fastwire
-        uint16_t intermediate[(uint8_t)length];
-        uint8_t success = Fastwire::readBuf(devAddr << 1, regAddr, (uint8_t *)intermediate, (uint8_t)(length * 2));
-        if (success) {
-            count = length; // success
-            for (uint8_t i = 0; i < length; i++) {
-                data[i] = (intermediate[2*i] << 8) | intermediate[2*i + 1];
-            }
-        } else {
-            count = -1; // error
+    uint16_t intermediate[(uint8_t)length];
+    uint8_t success = readBuf(devAddr << 1, regAddr, (uint8_t *)intermediate, (uint8_t)(length * 2));
+    if (success) {
+        count = length; // success
+        for (uint8_t i = 0; i < length; i++) {
+            data[i] = (intermediate[2*i] << 8) | intermediate[2*i + 1];
         }
+    } else {
+        count = -1; // error
+    }
 
     return count;
 }
@@ -295,7 +293,7 @@ bool I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
  * @return Status of operation (true = success)
  */
 bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data) {
-    bool success   = twi_master_transfer(devAddr, regAddr, 1,   TWI_ISSUE_STOP);
+    bool success   = twi_master_transfer(devAddr, &regAddr, 1,  TWI_ISSUE_STOP);
     return success & twi_master_transfer(devAddr, data, length, TWI_ISSUE_STOP);            // TODO && ?
 }
 
@@ -306,8 +304,8 @@ bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_
  * @param data Buffer to copy new data from
  * @return Status of operation (true = success)
  */
-bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t* data) {
-    bool success = twi_master_transfer(devAddr, regAddr, 1,   TWI_ISSUE_STOP);
+bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t* data16) {
+    bool success = twi_master_transfer(devAddr, &regAddr, 1, TWI_ISSUE_STOP);
     for (uint8_t i = 0; i < length * 2; i++) {
         if (!success)
             return false;
@@ -318,7 +316,7 @@ bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16
 }
 
 // Recyle nrf51 functions
-byte I2Cdev::readBuf(byte m_device_address, byte register_address, byte *destination, byte number_of_bytes) {
+bool I2Cdev::readBuf(byte m_device_address, byte register_address, byte *destination, byte number_of_bytes) {
     bool transfer_succeeded;
     transfer_succeeded = twi_master_transfer(m_device_address, &register_address, 1, TWI_DONT_ISSUE_STOP);
     transfer_succeeded &= twi_master_transfer(m_device_address|TWI_READ_BIT, destination, number_of_bytes, TWI_ISSUE_STOP);

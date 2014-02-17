@@ -38,18 +38,18 @@ THE SOFTWARE.
 #define _MPU9150_H_
 
 #include "I2Cdev.h"
+#define delay(x) nrf_delay_ms(x)
+extern void nrf_delay_ms(uint32_t volatile number_of_ms);
 
-// supporting link:  http://forum.arduino.cc/index.php?&topic=143444.msg1079517#msg1079517
-// also: http://forum.arduino.cc/index.php?&topic=141571.msg1062899#msg1062899s
-#ifndef __arm__
-#include <avr/pgmspace.h>
-#else
-#define PROGMEM /* empty */
+#include <stdint.h>
+#include <inttypes.h> // ?
+#include <stdlib.h>
+#include <string.h>
+using namespace std;
+typedef unsigned char byte;
+
+
 #define pgm_read_byte(x) (*(x))
-#define pgm_read_word(x) (*(x))
-#define pgm_read_float(x) (*(x))
-#define PSTR(STR) STR
-#endif
 
 //Magnetometer Registers
 #define MPU9150_RA_MAG_ADDRESS		0x0C
