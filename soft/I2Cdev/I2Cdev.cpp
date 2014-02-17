@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 
 #include "I2Cdev.h"
-#include "/opt/nrf51sdk/Nordic/nrf51822/Include/twi_master.h" // TODO FIX MAKEFILE !!!!
+#include "twi_master.h"
 
 /** Default constructor. */
 I2Cdev::I2Cdev() {
@@ -316,7 +316,7 @@ bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16
 }
 
 // Recyle nrf51 functions
-bool I2Cdev::readBuf(byte m_device_address, byte register_address, byte *destination, byte number_of_bytes) {
+bool I2Cdev::readBuf(uint8_t m_device_address, uint8_t register_address, uint8_t *destination, uint8_t number_of_bytes) {
     bool transfer_succeeded;
     transfer_succeeded = twi_master_transfer(m_device_address, &register_address, 1, TWI_DONT_ISSUE_STOP);
     transfer_succeeded &= twi_master_transfer(m_device_address|TWI_READ_BIT, destination, number_of_bytes, TWI_ISSUE_STOP);

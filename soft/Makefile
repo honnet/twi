@@ -7,19 +7,16 @@ NRF51_SDK     := /opt/nrf51sdk
 NRF51_INCLUDE := $(NRF51_SDK)/Nordic/nrf51822/Include
 NRF51_SRC     := $(NRF51_SDK)/Nordic/nrf51822/Source
 
-CPU           := cortex-m0
-BOARD         := BOARD_PCA10001
-
 INCLUDEDIRS = $(NRF51_INCLUDE)
 INCLUDEDIRS += $(NRF51_INCLUDE)/gcc
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/twi_sw_master_example
-INCLUDEDIRS += $(NRF51_INCLUDE)/ext_sensors #TODO copy the 2 defines from twi_sw_master_example in board.h !!
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example
 INCLUDEDIRS += ./MPU9150
 INCLUDEDIRS += ./I2Cdev
 
-DEFINE  = BOARD_PCA10001
-DEFINE += NRF51
+
+CPU    := cortex-m0
+DEFINE  = NRF51
 DEFINE += NRF51422_QFAA_C0
 
 # For the compiler stage
@@ -48,7 +45,6 @@ SRC += $(NRF51_SRC)/templates/system_nrf51.c
 SRC += $(NRF51_SRC)/nrf_delay/nrf_delay.c
 SRC += $(NRF51_SRC)/simple_uart/simple_uart.c
 SRC += $(NRF51_SRC)/twi_master/twi_hw_master.c
-SRC += $(NRF51_SRC)/ext_sensors/mpu6050/mpu6050.c # TODO remove !!
 SRC += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example/radio_config.c
 SRC += ./MPU9150/MPU9150.cpp
 SRC += ./I2Cdev/I2Cdev.cpp
