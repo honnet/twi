@@ -40,10 +40,13 @@ void init(void)
 {
   nrf_gpio_cfg_output(LED);
 
+  simple_uart_config(RTS_PIN_NUMBER, TX_PIN_NUMBER, CTS_PIN_NUMBER, RX_PIN_NUMBER, false);
+  simple_uart_putstring((const uint8_t *)"\r\nStarting IMU...\r\n");
+
   accelGyroMag.initialize();
   simple_uart_putstring( accelGyroMag.testConnection() ?
-                        (const uint8_t *)"MPU9150 connection successful" :
-                        (const uint8_t *)"MPU9150 connection failed" );
+                        (const uint8_t *)"MPU9150 connection successful\r\n" :
+                        (const uint8_t *)"MPU9150 connection failed\r\n" );
 
 ///* Start 16 MHz crystal oscillator */
 //NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
@@ -65,22 +68,47 @@ void init(void)
  * @brief Function for application main entry.
  * @return 0. int return type required by ANSI/ISO standard.
  */
+
+#include "I2Cdev.h"
+
 int main(void)
 {
-  init();
+    init();
+    uint8_t devAddr = 0x68;
 
-  char b = 0;
-  while(1)
-  {
+    char b = 0;
+    while(1)
+    {
+        uint8_t val;
+        char buf[16];
+        for (uint16_t reg=0; reg<=0xFF; reg++) {
+            I2Cdev::readBuf(devAddr<<1, reg, &val, 1);
+            if (val)
+            {
+                sprintf(buf, "%x = %x\n", reg, val);
+                simple_uart_putstring((const uint8_t *)buf);
+            }
+        }
+        simple_uart_putstring((const uint8_t *)"\n");
+
+    /*
+
     accelGyroMag.getMotion9(&a[0], &a[1], &a[2], &g[0], &g[1], &g[2], &m[0], &m[1], &m[2]);
-
     char buf[8]; // max = 2**16 = 65536
     for (int i=0; i<3; i++) {
         sprintf(buf, "%d\t" , a[i]);
         simple_uart_putstring((const uint8_t *)buf);
     }
-    simple_uart_putstring((const uint8_t *)"\r\n");
-
+    for (int i=0; i<3; i++) {
+        sprintf(buf, "%d\t" , g[i]);
+        simple_uart_putstring((const uint8_t *)buf);
+    }
+    for (int i=0; i<3; i++) {
+        sprintf(buf, "%d\t" , m[i]);
+        simple_uart_putstring((const uint8_t *)buf);
+    }
+    simple_uart_putstring((const uint8_t *)"\n");
+*/
     if (b)
       nrf_gpio_pin_set(LED);
     else

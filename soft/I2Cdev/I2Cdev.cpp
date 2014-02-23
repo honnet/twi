@@ -29,6 +29,9 @@ THE SOFTWARE.
 
 /** Default constructor. */
 I2Cdev::I2Cdev() {
+}
+
+void I2Cdev::init() {
     twi_master_init();
 }
 
@@ -145,12 +148,18 @@ int8_t I2Cdev::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16
  */
 int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout) {
     int8_t count = 0;
+//    uint32_t t1 = millis();
+
     bool success = readBuf(devAddr << 1, regAddr, data, length);
     if (success) {
         count = length; // success
     } else {
         count = -1; // error
     }
+
+    // check for timeout
+//    if (timeout > 0 && millis() - t1 >= timeout && count < length) count = -1; // timeout
+
     return count;
 }
 
@@ -162,8 +171,9 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
  * @return Number of words read (-1 indicates failure)
  */
-int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout) { // TODO REMOVE TIMEOUT
+int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout) { // TODO TIMEOUT !!
     int8_t count = 0;
+//    uint32_t t1 = millis();
 
     uint16_t intermediate[(uint8_t)length];
     uint8_t success = readBuf(devAddr << 1, regAddr, (uint8_t *)intermediate, (uint8_t)(length * 2));
@@ -175,6 +185,8 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
     } else {
         count = -1; // error
     }
+
+//    if (timeout > 0 && millis() - t1 >= timeout && count < length) count = -1; // timeout
 
     return count;
 }
@@ -294,7 +306,7 @@ bool I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
  */
 bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data) {
     bool success   = twi_master_transfer(devAddr, &regAddr, 1,  TWI_ISSUE_STOP);
-    return success & twi_master_transfer(devAddr, data, length, TWI_ISSUE_STOP);            // TODO && ?
+    return success & twi_master_transfer(devAddr, data, length, TWI_ISSUE_STOP);
 }
 
 /** Write multiple words to a 16-bit device register.
@@ -309,7 +321,7 @@ bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16
     for (uint8_t i = 0; i < length * 2; i++) {
         if (!success)
             return false;
-        uint8_t data[2] = { uint8_t(data16[i] >> 8), uint8_t(data16[i]) };                                  // TODO i++ !?
+        uint8_t data[2] = { uint8_t(data16[i] >> 8), uint8_t(data16[i++]) };                   // TODO i++ !?
         success &= twi_master_transfer(devAddr, data, 2, TWI_ISSUE_STOP);
     }
     return success;
