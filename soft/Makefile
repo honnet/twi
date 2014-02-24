@@ -49,6 +49,12 @@ SRC += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example/radio_confi
 SRC += ./MPU9150/MPU9150.cpp
 SRC += ./I2Cdev/I2Cdev.cpp
 
+
+INCLUDEDIRS += $(NRF51_INCLUDE)/ext_sensors #TODO remove after tests
+SRC += $(NRF51_SRC)/ext_sensors/mpu6050/mpu6050.c # TODO remove !!
+
+
+
 ASSEMBLY_SRC += $(NRF51_SRC)/templates/gcc/gcc_startup_nrf51.s
 
 OBJ = $(ASSEMBLY_SRC:.s=.o) $(addsuffix .o,$(basename $(SRC)))

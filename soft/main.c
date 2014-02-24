@@ -70,73 +70,86 @@ void init(void)
  */
 
 #include "I2Cdev.h"
+#include "mpu6050.h"
+#include <stdlib.h>
 
 int main(void)
 {
-    init();
-    uint8_t devAddr = 0x68;
-
     char b = 0;
+    init();
+
+    uint8_t devAddr = 0x68;
+    if (!mpu6050_init(devAddr))
+        simple_uart_putstring((const uint8_t *)"\n !!! mpu6050_init failed !!!\n\n");
+    else
+        simple_uart_putstring((const uint8_t *)"\n !!! mpu6050_init OK !!!\n\n");
+
     while(1)
     {
-        uint8_t val;
+#if 0
+        uint8_t data;
         char buf[16];
         for (uint16_t reg=0; reg<=0xFF; reg++) {
-            I2Cdev::readBuf(devAddr<<1, reg, &val, 1);
-            if (val)
+            I2Cdev::readBuf(devAddr<<1, reg, &data, 1);
+            if (data)
             {
-                sprintf(buf, "%x = %x\n", reg, val);
+                sprintf(buf, "%x = %x\n", reg, data);
                 simple_uart_putstring((const uint8_t *)buf);
             }
         }
         simple_uart_putstring((const uint8_t *)"\n");
+#else
+        int16_t acc = accelGyroMag.getAccelerationX();
+        char buf[8]; // max = 2**16 = 65536
+        sprintf(buf, "%d\t", acc);
+        simple_uart_putstring((const uint8_t *)buf);
 
-    /*
+        for (int i=0; i<abs(acc)>>8; i++) {
+            simple_uart_put('*');
+        }
+        simple_uart_put('\n');
 
-    accelGyroMag.getMotion9(&a[0], &a[1], &a[2], &g[0], &g[1], &g[2], &m[0], &m[1], &m[2]);
-    char buf[8]; // max = 2**16 = 65536
-    for (int i=0; i<3; i++) {
-        sprintf(buf, "%d\t" , a[i]);
-        simple_uart_putstring((const uint8_t *)buf);
-    }
-    for (int i=0; i<3; i++) {
-        sprintf(buf, "%d\t" , g[i]);
-        simple_uart_putstring((const uint8_t *)buf);
-    }
-    for (int i=0; i<3; i++) {
-        sprintf(buf, "%d\t" , m[i]);
-        simple_uart_putstring((const uint8_t *)buf);
-    }
-    simple_uart_putstring((const uint8_t *)"\n");
-*/
-    if (b)
-      nrf_gpio_pin_set(LED);
-    else
-      nrf_gpio_pin_clear(LED);
 /*
-    // Place the read character in the payload, enable the radio and
-    // send the packet:
-    packet[0] = b ? '1' : '0';
-    NRF_RADIO->EVENTS_READY = 0U;
-    NRF_RADIO->TASKS_TXEN = 1;
-    while (NRF_RADIO->EVENTS_READY == 0U)
-    {
-    }
-    NRF_RADIO->TASKS_START = 1U;
-    NRF_RADIO->EVENTS_END = 0U;
-    while(NRF_RADIO->EVENTS_END == 0U)
-    {
-    }
-    NRF_RADIO->EVENTS_DISABLED = 0U;
-    // Disable radio
-    NRF_RADIO->TASKS_DISABLE = 1U;
-    while(NRF_RADIO->EVENTS_DISABLED == 0U)
-    {
-    }
+        accelGyroMag.getMotion9(&a[0], &a[1], &a[2], &g[0], &g[1], &g[2], &m[0], &m[1], &m[2]);
+        for (int i=0; i<3; i++) {
+            sprintf(buf, "%d\t" , a[i]);
+            simple_uart_putstring((const uint8_t *)buf);
+        }
+        for (int i=0; i<3; i++) {
+            sprintf(buf, "%d\t" , g[i]);
+            simple_uart_putstring((const uint8_t *)buf);
+        }
+        for (int i=0; i<3; i++) {
+            sprintf(buf, "%d\t" , m[i]);
+            simple_uart_putstring((const uint8_t *)buf);
+        }
 */
-    b = !b;
-    nrf_delay_ms(90);
-  }
+#endif
+/*
+        // Place the read character in the payload, enable the radio and
+        // send the packet:
+        packet[0] = b ? '1' : '0';
+        NRF_RADIO->EVENTS_READY = 0U;
+        NRF_RADIO->TASKS_TXEN = 1;
+        while (NRF_RADIO->EVENTS_READY == 0U)
+        {
+        }
+        NRF_RADIO->TASKS_START = 1U;
+        NRF_RADIO->EVENTS_END = 0U;
+        while(NRF_RADIO->EVENTS_END == 0U)
+        {
+        }
+        NRF_RADIO->EVENTS_DISABLED = 0U;
+        // Disable radio
+        NRF_RADIO->TASKS_DISABLE = 1U;
+        while(NRF_RADIO->EVENTS_DISABLED == 0U)
+        {
+        }
+*/
+        nrf_gpio_pin_write(LED, b);
+        b = !b;
+        nrf_delay_ms(10);
+    }
 }
 
 /**

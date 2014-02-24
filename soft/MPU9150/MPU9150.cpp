@@ -62,10 +62,12 @@ MPU9150::MPU9150(uint8_t address) {
  */
 void MPU9150::initialize() {
     I2Cdev::init();
+    /*
+    setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
     setClockSource(MPU9150_CLOCK_PLL_XGYRO);
     setFullScaleGyroRange(MPU9150_GYRO_FS_250);
     setFullScaleAccelRange(MPU9150_ACCEL_FS_2);
-    setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
+    */
 }
 
 /** Verify the I2C connection.
