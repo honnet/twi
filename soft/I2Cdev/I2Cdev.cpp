@@ -1,4 +1,26 @@
-// Adapted from I2Cdev library by Jeff Rowberg: github.com/jrowberg/i2cdevlib
+// Porting of the Arduino library for Nordic nrf51 series.
+//
+// I2Cdev library collection - Main I2C device class
+// Abstracts bit and byte I2C R/W functions into a convenient class
+// 6/9/2012 by Jeff Rowberg <jeff@rowberg.net>
+//
+// Changelog:
+//      2014-02-27 - modify Arduino specific parts for Nordic nrf51 series.
+//      2013-05-06 - add Francesco Ferrara's Fastwire v0.24 implementation with small modifications
+//      2013-05-05 - fix issue with writing bit values to words (Sasquatch/Farzanegan)
+//      2012-06-09 - fix major issue with reading > 32 bytes at a time with Arduino Wire
+//                 - add compiler warnings when using outdated or IDE or limited I2Cdev implementation
+//      2011-11-01 - fix write*Bits mask calculation (thanks sasquatch @ Arduino forums)
+//      2011-10-03 - added automatic Arduino version detection for ease of use
+//      2011-10-02 - added Gene Knight's NBWire TwoWire class implementation with small modifications
+//      2011-08-31 - added support for Arduino 1.0 Wire library (methods are different from 0.x)
+//      2011-08-03 - added optional timeout parameter to read* methods to easily change from default
+//      2011-08-02 - added support for 16-bit registers
+//                 - fixed incorrect Doxygen comments on some methods
+//                 - added timeout value for read operations (thanks mem @ Arduino forums)
+//      2011-07-30 - changed read/write function structures to return success or byte counts
+//                 - made all methods static for multi-device memory savings
+//      2011-07-28 - initial release
 
 /* ============================================
 I2Cdev device library code is placed under the MIT license
@@ -27,10 +49,13 @@ THE SOFTWARE.
 #include "I2Cdev.h"
 #include "twi_master.h"
 
-/** Default constructor. */
+/** Default constructor.
+ */
 I2Cdev::I2Cdev() {
 }
 
+/** Initialize the nrf51 I2C module
+ */
 void I2Cdev::init() {
     twi_master_init();
 }
@@ -148,7 +173,7 @@ int8_t I2Cdev::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16
  */
 int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout) {
     int8_t count = 0;
-//    uint32_t t1 = millis();
+//    uint32_t t1 = millis(); // TODO
 
     bool success = readBuf(devAddr << 1, regAddr, data, length);
     if (success) {
@@ -158,7 +183,7 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
     }
 
     // check for timeout
-//    if (timeout > 0 && millis() - t1 >= timeout && count < length) count = -1; // timeout
+//    if (timeout > 0 && millis() - t1 >= timeout && count < length) count = -1; // timeout TODO
 
     return count;
 }
@@ -171,7 +196,7 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
  * @return Number of words read (-1 indicates failure)
  */
-int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout) { // TODO TIMEOUT !!
+int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout) { // timeout TODO
     int8_t count = 0;
 //    uint32_t t1 = millis();
 
@@ -186,7 +211,7 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
         count = -1; // error
     }
 
-//    if (timeout > 0 && millis() - t1 >= timeout && count < length) count = -1; // timeout
+//    if (timeout > 0 && millis() - t1 >= timeout && count < length) count = -1; // timeout TODO
 
     return count;
 }
@@ -321,17 +346,23 @@ bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16
     for (uint8_t i = 0; i < length * 2; i++) {
         if (!success)
             return false;
-        uint8_t data[2] = { uint8_t(data16[i] >> 8), uint8_t(data16[i++]) };                   // TODO i++ !?
+        uint8_t data[2] = { uint8_t(data16[i] >> 8), uint8_t(data16[i++]) };
         success &= twi_master_transfer(devAddr, data, 2, TWI_ISSUE_STOP);
     }
     return success;
 }
 
+/** Read multiple bytes from an 8-bit device register.
+ * @param devAddr I2C slave device address
+ * @param regAddr First register address to read from
+ * @param data Buffer to copy new data to
+ * @param length Number of words to read
+ * @return Status of operation (true = success)
+ */
 // Recyle nrf51 functions
-bool I2Cdev::readBuf(uint8_t m_device_address, uint8_t register_address, uint8_t *destination, uint8_t number_of_bytes) {
+bool I2Cdev::readBuf(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t length) {
     bool transfer_succeeded;
-    transfer_succeeded = twi_master_transfer(m_device_address, &register_address, 1, TWI_DONT_ISSUE_STOP);
-    transfer_succeeded &= twi_master_transfer(m_device_address|TWI_READ_BIT, destination, number_of_bytes, TWI_ISSUE_STOP);
+    transfer_succeeded = twi_master_transfer(devAddr, &regAddr, 1, TWI_DONT_ISSUE_STOP);
+    transfer_succeeded &= twi_master_transfer(devAddr|TWI_READ_BIT, data, length, TWI_ISSUE_STOP);
     return transfer_succeeded;
 }
-
