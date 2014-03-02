@@ -48,10 +48,12 @@ THE SOFTWARE.
 
 #include "I2Cdev.h"
 #include "twi_master.h"
+#include "nrf_delay.h"
 
 /** Default constructor.
  */
 I2Cdev::I2Cdev() {
+    // TODO initialize defaulst devAddr as class attribute
 }
 
 /** Initialize the nrf51 I2C module
@@ -175,7 +177,7 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
     int8_t count = 0;
 //    uint32_t t1 = millis(); // TODO
 
-    bool success = readBuf(devAddr << 1, regAddr, data, length);
+    bool success = readBuf(devAddr, regAddr, data, length);
     if (success) {
         count = length; // success
     } else {
@@ -201,7 +203,7 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
 //    uint32_t t1 = millis();
 
     uint16_t intermediate[(uint8_t)length];
-    uint8_t success = readBuf(devAddr << 1, regAddr, (uint8_t *)intermediate, (uint8_t)(length * 2));
+    uint8_t success = readBuf(devAddr, regAddr, (uint8_t *)intermediate, length * 2);
     if (success) {
         count = length; // success
         for (uint8_t i = 0; i < length; i++) {
@@ -309,7 +311,9 @@ bool I2Cdev::writeBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint
  * @return Status of operation (true = success)
  */
 bool I2Cdev::writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t data) {
-    return writeBytes(devAddr, regAddr, 1, &data);
+    devAddr <<= 1;                                                                     // TODO class attribute
+	uint8_t w2_data[2] = { regAddr, data };
+    return twi_master_transfer(devAddr, w2_data, 2, TWI_ISSUE_STOP);
 }
 
 /** Write single word to a 16-bit device register.
@@ -319,7 +323,10 @@ bool I2Cdev::writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t data) {
  * @return Status of operation (true = success)
  */
 bool I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
-    return writeWords(devAddr, regAddr, 1, &data);
+    devAddr <<= 1;                                                                     // TODO class attribute
+
+    uint8_t buffer[3] = { regAddr, uint8_t(data >> 8), uint8_t(data) };
+    return twi_master_transfer(devAddr, buffer, 3, TWI_ISSUE_STOP);
 }
 
 /** Write multiple bytes to an 8-bit device register.
@@ -330,8 +337,16 @@ bool I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
  * @return Status of operation (true = success)
  */
 bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data) {
-    bool success   = twi_master_transfer(devAddr, &regAddr, 1,  TWI_ISSUE_STOP);
-    return success & twi_master_transfer(devAddr, data, length, TWI_ISSUE_STOP);
+    devAddr <<= 1;                                                                     // TODO class attribute
+
+    const int bytes_num = 1 + length * 2;
+	uint8_t buffer[bytes_num];
+	buffer[0] = regAddr;
+
+    for (int i = 0; i < length; i++)
+    	buffer[i+1] = data[i];
+
+    return twi_master_transfer(devAddr, buffer, bytes_num, TWI_ISSUE_STOP);
 }
 
 /** Write multiple words to a 16-bit device register.
@@ -341,28 +356,33 @@ bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_
  * @param data Buffer to copy new data from
  * @return Status of operation (true = success)
  */
-bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t* data16) {
-    bool success = twi_master_transfer(devAddr, &regAddr, 1, TWI_ISSUE_STOP);
-    for (uint8_t i = 0; i < length * 2; i++) {
-        if (!success)
-            return false;
-        uint8_t data[2] = { uint8_t(data16[i] >> 8), uint8_t(data16[i++]) };
-        success &= twi_master_transfer(devAddr, data, 2, TWI_ISSUE_STOP);
+bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t* data) {
+    devAddr <<= 1;                                                                     // TODO class attribute
+
+    const int bytes_num = 1 + length * 2;
+    uint8_t buffer[bytes_num];
+    buffer[0] = regAddr;
+
+    for (int i = 0; i < length; i++) {
+         buffer[2*i+1] = uint8_t(data[i] >> 8);
+         buffer[2*i+2] = uint8_t(data[i]);
     }
-    return success;
+    return twi_master_transfer(devAddr, buffer, bytes_num, TWI_ISSUE_STOP);
 }
 
-/** Read multiple bytes from an 8-bit device register.
+/** Read multiple bytes from an 8-bit device register - Recyle nrf51 functions
  * @param devAddr I2C slave device address
  * @param regAddr First register address to read from
  * @param data Buffer to copy new data to
  * @param length Number of words to read
  * @return Status of operation (true = success)
  */
-// Recyle nrf51 functions
 bool I2Cdev::readBuf(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t length) {
+    devAddr <<= 1;                                                                     // TODO class attribute
+
     bool transfer_succeeded;
-    transfer_succeeded = twi_master_transfer(devAddr, &regAddr, 1, TWI_DONT_ISSUE_STOP);
+    transfer_succeeded  = twi_master_transfer(devAddr, &regAddr, 1, TWI_DONT_ISSUE_STOP);
     transfer_succeeded &= twi_master_transfer(devAddr|TWI_READ_BIT, data, length, TWI_ISSUE_STOP);
     return transfer_succeeded;
 }
+

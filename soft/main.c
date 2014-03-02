@@ -22,6 +22,7 @@
 *
 */
 
+#include <stdlib.h> // sprintf()
 #include <stdio.h>
 #include <stdint.h>
 #include "radio_config.h"
@@ -39,10 +40,7 @@ int16_t a[3], g[3], m[3];
 void init(void)
 {
   nrf_gpio_cfg_output(LED);
-
   simple_uart_config(RTS_PIN_NUMBER, TX_PIN_NUMBER, CTS_PIN_NUMBER, RX_PIN_NUMBER, false);
-  simple_uart_putstring((const uint8_t *)"\r\nStarting IMU...\r\n");
-
   accelGyroMag.initialize();
   simple_uart_putstring( accelGyroMag.testConnection() ?
                         (const uint8_t *)"MPU9150 connection successful\r\n" :
@@ -69,44 +67,21 @@ void init(void)
  * @return 0. int return type required by ANSI/ISO standard.
  */
 
-#include "I2Cdev.h"
-#include "mpu6050.h"
-#include <stdlib.h>
-
 int main(void)
 {
     char b = 0;
     init();
 
-    uint8_t devAddr = 0x68;
-    if (!mpu6050_init(devAddr))
-        simple_uart_putstring((const uint8_t *)"\n !!! mpu6050_init failed !!!\n\n");
-    else
-        simple_uart_putstring((const uint8_t *)"\n !!! mpu6050_init OK !!!\n\n");
-
     while(1)
     {
-#if 0
-        uint8_t data;
-        char buf[16];
-        for (uint16_t reg=0; reg<=0xFF; reg++) {
-            I2Cdev::readBuf(devAddr<<1, reg, &data, 1);
-            if (data)
-            {
-                sprintf(buf, "%x = %x\n", reg, data);
-                simple_uart_putstring((const uint8_t *)buf);
-            }
-        }
-        simple_uart_putstring((const uint8_t *)"\n");
-#else
-        int16_t acc = accelGyroMag.getAccelerationX();
+        int16_t acc = accelGyroMag.getAccelerationZ();
+
         char buf[8]; // max = 2**16 = 65536
         sprintf(buf, "%d\t", acc);
         simple_uart_putstring((const uint8_t *)buf);
 
-        for (int i=0; i<abs(acc)>>8; i++) {
-            simple_uart_put('*');
-        }
+        for (int i=0; i<abs(acc)>>8; i++)
+            simple_uart_put('+');
         simple_uart_put('\n');
 
 /*
@@ -124,7 +99,7 @@ int main(void)
             simple_uart_putstring((const uint8_t *)buf);
         }
 */
-#endif
+
 /*
         // Place the read character in the payload, enable the radio and
         // send the packet:
@@ -148,7 +123,7 @@ int main(void)
 */
         nrf_gpio_pin_write(LED, b);
         b = !b;
-        nrf_delay_ms(10);
+        nrf_delay_ms(20);
     }
 }
 

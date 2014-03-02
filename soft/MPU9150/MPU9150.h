@@ -38,13 +38,10 @@ THE SOFTWARE.
 #define _MPU9150_H_
 
 #include "I2Cdev.h"
-#include <stdlib.h>
-#include <string.h>
 
 #define pgm_read_byte(x) (*(x))
 #define delay(x)         nrf_delay_ms(x)
 extern void nrf_delay_ms(uint32_t volatile number_of_ms);
-typedef unsigned char byte;
 
 
 //Magnetometer Registers

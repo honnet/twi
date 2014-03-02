@@ -34,6 +34,8 @@ THE SOFTWARE.
 ===============================================
 */
 
+#include <stdlib.h> // malloc()
+#include <string.h> // memcmp()
 #include "MPU9150.h"
 
 /** Default constructor, uses default I2C address.
@@ -60,14 +62,22 @@ MPU9150::MPU9150(uint8_t address) {
  * the clock source to use the X Gyro for reference, which is slightly better than
  * the default internal clock source.
  */
+
+#include "simple_uart.h"
+#include <stdio.h>
+
 void MPU9150::initialize() {
     I2Cdev::init();
-    /*
-    setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
+    delay(6); // experimental value TODO: verify!
+/*
+    resetGyroscopePath();
+    resetAccelerometerPath();
+    resetTemperaturePath();
+*/
     setClockSource(MPU9150_CLOCK_PLL_XGYRO);
     setFullScaleGyroRange(MPU9150_GYRO_FS_250);
     setFullScaleAccelRange(MPU9150_ACCEL_FS_2);
-    */
+    setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
 }
 
 /** Verify the I2C connection.
