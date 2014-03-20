@@ -1,96 +1,90 @@
-/* Copyright (c) 2009 Nordic Semiconductor. All Rights Reserved.
- *
- * The information contained herein is property of Nordic Semiconductor ASA.
- * Terms and conditions of usage are described in detail in NORDIC
- * SEMICONDUCTOR STANDARD SOFTWARE LICENSE AGREEMENT.
- *
- * Licensees are granted free, non-transferable use of the information. NO
- * WARRANTY of ANY KIND is provided. This heading must NOT be removed from
- * the file.
- *
- */
-
-/** @file
-*
-* @defgroup nrf_dev_led_radio_tx_example_main main.c
-* @{
-* @ingroup nrf_dev_led_radio_tx_example
-*
-* @brief Radio Transmitter Example Application main file.
-*
-* This file contains the source code for a sample application using the NRF_RADIO peripheral.
-*
-*/
-
-#include <stdint.h>
-#include "radio_config.h"
-#include "nrf_gpio.h"
 #include "board.h"
+#include "nrf_gpio.h"
+#include "nrf_delay.h"
+#include "nrf_esb.h"
 
-static uint8_t packet[4];  ///< Packet to transmit
+#define PIPE_NUMBER 0
+#define TX_PAYLOAD_LENGTH 2
 
-void init(void)
-{
-  nrf_gpio_cfg_output(LED);
+// Data and acknowledgement payloads
+static uint8_t my_tx_payload[TX_PAYLOAD_LENGTH];                ///< Payload to send to PRX.
+static uint8_t my_rx_payload[NRF_ESB_CONST_MAX_PAYLOAD_LENGTH]; ///< Placeholder for received ACK payloads from PRX.
 
-  /* Start 16 MHz crystal oscillator */
-  NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
-  NRF_CLOCK->TASKS_HFCLKSTART = 1;
+/////////////////////////////////////////////////////////////////////////////
+// main
+/////////////////////////////////////////////////////////////////////////////
 
-  /* Wait for the external oscillator to start up */
-  while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0)
-  {
-  }
-
-  // Set radio configuration parameters
-  radio_configure();
-
-  // Set payload pointer
-  NRF_RADIO->PACKETPTR = (uint32_t)packet;
-}
-
-/**
- * @brief Function for application main entry.
- * @return 0. int return type required by ANSI/ISO standard.
- */
 int main(void)
 {
-  init();
-  nrf_gpio_pin_set(LED);
+    // Initialize GPIOs
+    nrf_gpio_cfg_output(LED);
 
-  char b = 0;
-  while(1)
-  {
-    if (b)
-      nrf_gpio_pin_set(LED);
-    else
-      nrf_gpio_pin_clear(LED);
+    // Initialize ESB
+    nrf_esb_init(NRF_ESB_MODE_PTX);
+    // Mostly default parameters, preciser for clarity with RX
+    {
+        nrf_esb_set_xosc_ctl(NRF_ESB_XOSC_CTL_AUTO);
+        nrf_esb_set_crc_length(NRF_ESB_CRC_LENGTH_1_BYTE);
+        nrf_esb_set_datarate(NRF_ESB_DATARATE_2_MBPS);
+        nrf_esb_set_retransmit_delay(600); // because 2_MBPS
+        nrf_esb_set_max_number_of_tx_attempts(0); // unlimited
+        nrf_esb_set_enabled_prx_pipes(NRF_ESB_DEFAULT_ENABLED_PRX_PIPES);
+        nrf_esb_set_base_address_length(NRF_ESB_BASE_ADDRESS_LENGTH_4B);
+        nrf_esb_set_address_prefix_byte(0, 0x66);
+        nrf_esb_set_base_address_0(0x66666666);
+        nrf_esb_set_channel(1);
+        nrf_esb_enable_dyn_ack();
+//        nrf_esb_set_output_power(NRF_ESB_OUTPUT_POWER_4_DBM); // default 0
+    }
+	// Add packet into TX queue
+    nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
+    nrf_esb_enable();
 
-    // Place the read character in the payload, enable the radio and
-    // send the packet:
-    packet[0] = b ? '1' : '0';
-    NRF_RADIO->EVENTS_READY = 0U;
-    NRF_RADIO->TASKS_TXEN = 1;
-    while (NRF_RADIO->EVENTS_READY == 0U)
+    while(1)
     {
+        // Optionally set the CPU to sleep while waiting for a callback.
+        // __WFI();
     }
-    NRF_RADIO->TASKS_START = 1U;
-    NRF_RADIO->EVENTS_END = 0U;
-    while(NRF_RADIO->EVENTS_END == 0U)
-    {
-    }
-    NRF_RADIO->EVENTS_DISABLED = 0U;
-    // Disable radio
-    NRF_RADIO->TASKS_DISABLE = 1U;
-    while(NRF_RADIO->EVENTS_DISABLED == 0U)
-    {
-    }
-
-    b = !b;
-    nrf_delay_ms(90);
-  }
 }
 
-/**
- *@}
- **/
+
+/////////////////////////////////////////////////////////////////////////////
+// ESB callback function definitions
+/////////////////////////////////////////////////////////////////////////////
+
+
+// If an ACK was received, we send another packet.
+void nrf_esb_tx_success(uint32_t tx_pipe, int32_t rssi) {
+    my_tx_payload[0]++;
+    nrf_gpio_pin_write(LED, my_tx_payload[0] & 1);
+    nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
+
+    nrf_delay_ms(150);
+}
+
+
+// If the transmission failed, resend the last packet.
+void nrf_esb_tx_failed(uint32_t tx_pipe) {
+    nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
+    nrf_gpio_pin_set(LED);
+    nrf_delay_ms(1000);
+}
+
+// Reception hanfler - not useful for the moment
+void nrf_esb_rx_data_ready(uint32_t rx_pipe, int32_t rssi) {
+    uint32_t my_rx_payload_length;
+    // Pop packet and write first byte of the payload to the GPIO pin.
+    nrf_esb_fetch_packet_from_rx_fifo(PIPE_NUMBER, my_rx_payload, &my_rx_payload_length);
+    if (my_rx_payload_length > 0)
+    {
+        // TODO: use nrf_esb_get_rx_fifo_packet_count (uint32_t pipe)
+        nrf_gpio_pin_toggle(LED);
+    }
+
+    // Flushing Rx fifo so that there is space for future transmits
+//  nrf_esb_flush_rx_fifo(PIPE_NUMBER); // TODO ?
+}
+
+// Called after the nrf_esb_disable() process is done, to sleep for example
+void nrf_esb_disabled(void) {}
+
