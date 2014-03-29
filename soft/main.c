@@ -4,57 +4,60 @@
 #include "nrf_gpio.h"
 #include "board.h"
 #include "nrf_delay.h"
-#include "MPU9150.h"
+#include "MPU9150Lib.h"
+#include "log.h"
 
-void simple_uart_print_int(int i);
 
-#define DEBUG_PRINT
+MPU9150Lib MPU;
 
-#ifdef DEBUG_PRINT
-#  include <stdlib.h> // sprintf()
-#  include "simple_uart.h"
-#  define DP_cnf(...) simple_uart_config(__VA_ARGS__)
-#  define DP_int(x)   simple_uart_print_int(x)
-#  define DP_str(x)   simple_uart_putstring((const uint8_t *)(x))
-#else
-#  define DP_cnf(...)
-#  define DP_int(x)
-#  define DP_str(x)
-#endif
+//  MPU_UPDATE_RATE defines the rate (in Hz) at which the MPU updates the sensor data and DMP output
+#define MPU_UPDATE_RATE  (20)
 
-MPU9150 accelGyroMag;
-int16_t a[3], g[3], m[3];
+//  MAG_UPDATE_RATE defines the rate (in Hz) at which the MPU updates the magnetometer data
+//  MAG_UPDATE_RATE should be less than or equal to the MPU_UPDATE_RATE
+#define MAG_UPDATE_RATE  (10)
+
+//  MPU_MAG_MIX defines the influence that the magnetometer has on the yaw output.
+//  The magnetometer itself is quite noisy so some mixing with the gyro yaw can help
+//  significantly. Some example values are defined below:
+#define  MPU_MAG_MIX_GYRO_ONLY          0                   // just use gyro yaw
+#define  MPU_MAG_MIX_MAG_ONLY           1                   // just use magnetometer and no gyro yaw
+#define  MPU_MAG_MIX_GYRO_AND_MAG       10                  // a good mix value
+#define  MPU_MAG_MIX_GYRO_AND_SOME_MAG  50                  // mainly gyros with a bit of mag correction
+
+//  MPU_LPF_RATE is the low pas filter rate and can be between 5 and 188Hz
+#define MPU_LPF_RATE   40
 
 void init(void)
 {
     nrf_gpio_cfg_output(LED);
+
     DP_cnf(RTS_PIN_NUMBER, TX_PIN_NUMBER, CTS_PIN_NUMBER, RX_PIN_NUMBER, false);
-    accelGyroMag.initialize();
-    DP_str( accelGyroMag.testConnection() ?
-            "MPU9150 connection OK\r\n" :
-            "MPU9150 connection failed\r\n" );
+    DP_str("retval\n");
+    DP_int_ln(3);
+
+    int retval = MPU.init(MPU_UPDATE_RATE, MPU_MAG_MIX_GYRO_AND_MAG, MAG_UPDATE_RATE, MPU_LPF_RATE); // start the MPU
+    DP_int_ln(retval);
 }
 
 int main(void)
 {
-    char b = 0;
     init();
 
     while(1)
     {
-        accelGyroMag.getMotion9(&a[0], &a[1], &a[2], &g[0], &g[1], &g[2], &m[0], &m[1], &m[2]);
 /*
-        // accelerometer:
-        for (int i=0; i<3; i++) {
-            DP_int(m[i]);
-            DP_str("\t");
+        if (MPU.read()) {                                        // get the latest data if ready yet
+//          MPU.printQuaternion(MPU.m_rawQuaternion);            // print the raw quaternion from the dmp
+//          MPU.printVector(MPU.m_rawMag);                       // print the raw mag data
+//          MPU.printVector(MPU.m_rawAccel);                     // print the raw accel data
+//          MPU.printAngles(MPU.m_dmpEulerPose);                 // the Euler angles from the dmp quaternion
+//          MPU.printVector(MPU.m_calAccel);                     // print the calibrated accel data
+//          MPU.printVector(MPU.m_calMag);                       // print the calibrated mag data
+            MPU.printAngles(MPU.m_fusedEulerPose);               // print the output of the data fusion
+
+            DP_str("\n");
         }
-*/
-        // heading:
-        float heading = atan2(m[1], m[0]); // atan2(my, mx);
-        if(heading < 0)
-            heading += 2 * M_PI;
-        heading *= 180 / M_PI;
         DP_int(heading);
         DP_str("\t");
 
@@ -66,15 +69,9 @@ int main(void)
                 DP_str(" ");
         }
         DP_str("|\r\n");
-
-        nrf_gpio_pin_write(LED, b = !b);
-        nrf_delay_ms(10);
+*/
+        nrf_gpio_pin_toggle(LED);
+        nrf_delay_ms(50);
     }
 }
 
-void simple_uart_print_int(int i)
-{
-    char buf[12]; // 2**32 = 4G => sign + 10 numbers + '\0'
-    sprintf(buf, "%d" , i);
-    simple_uart_putstring((const uint8_t *)buf);
-}

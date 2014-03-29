@@ -6,13 +6,18 @@ OBJCOPY       := /usr/bin/arm-none-eabi-objcopy
 NRF51_SDK     := /opt/nrf51sdk
 NRF51_INCLUDE := $(NRF51_SDK)/Nordic/nrf51822/Include
 NRF51_SRC     := $(NRF51_SDK)/Nordic/nrf51822/Source
+MPU_LIBS	  := ./MPU9150_Pansenti/libraries
 
 INCLUDEDIRS = $(NRF51_INCLUDE)
 INCLUDEDIRS += $(NRF51_INCLUDE)/gcc
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/twi_sw_master_example
-INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example
-INCLUDEDIRS += ./MPU9150
-INCLUDEDIRS += ./I2Cdev
+INCLUDEDIRS += $(MPU_LIBS)/I2CDev
+INCLUDEDIRS += $(MPU_LIBS)/MPU9150Lib
+INCLUDEDIRS += $(MPU_LIBS)/MotionDriver
+INCLUDEDIRS += $(MPU_LIBS)/CalLib
+INCLUDEDIRS += $(MPU_LIBS)/RTC
+INCLUDEDIRS += $(MPU_LIBS)/flash
+INCLUDEDIRS += $(MPU_LIBS)/log
 
 
 CPU    := cortex-m0
@@ -45,14 +50,16 @@ SRC += $(NRF51_SRC)/templates/system_nrf51.c
 SRC += $(NRF51_SRC)/nrf_delay/nrf_delay.c
 SRC += $(NRF51_SRC)/simple_uart/simple_uart.c
 SRC += $(NRF51_SRC)/twi_master/twi_hw_master.c
-SRC += $(NRF51_SDK)/Nordic/nrf51822/Board/pca10001/led_radio_example/radio_config.c
-SRC += ./MPU9150/MPU9150.cpp
-SRC += ./I2Cdev/I2Cdev.cpp
-
-
-INCLUDEDIRS += $(NRF51_INCLUDE)/ext_sensors #TODO remove after tests
-SRC += $(NRF51_SRC)/ext_sensors/mpu6050/mpu6050.c # TODO remove !!
-
+SRC += $(MPU_LIBS)/I2CDev/I2Cdev.cpp
+SRC += $(MPU_LIBS)/MPU9150Lib/MPU9150Lib.cpp
+SRC += $(MPU_LIBS)/MPU9150Lib/MPUQuaternion.cpp
+SRC += $(MPU_LIBS)/MPU9150Lib/MPUVector3.cpp
+SRC += $(MPU_LIBS)/MotionDriver/inv_mpu.cpp
+SRC += $(MPU_LIBS)/MotionDriver/inv_mpu_dmp_motion_driver.cpp
+SRC += $(MPU_LIBS)/CalLib/CalLib.cpp
+SRC += $(MPU_LIBS)/RTC/RTC1_ms_timer.cpp
+SRC += $(MPU_LIBS)/flash/flash.c
+SRC += $(MPU_LIBS)/log/log.c
 
 
 ASSEMBLY_SRC += $(NRF51_SRC)/templates/gcc/gcc_startup_nrf51.s
