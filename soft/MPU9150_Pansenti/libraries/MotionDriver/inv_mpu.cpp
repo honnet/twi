@@ -23,7 +23,7 @@
 #include <string.h>
 #include <math.h>
 #include "inv_mpu.h"
-#include "log.h"
+#include "tools.h"
 
 
 /* The following functions must be defined for this platform:
@@ -41,7 +41,6 @@
 
 #define i2c_write(...)  !I2Cdev::writeBytes(__VA_ARGS__)
 #define i2c_read(...)   !I2Cdev::readBytes(__VA_ARGS__)
-#define delay_ms(x)     nrf_delay_ms(x)
 
 static inline int reg_int_cb(struct int_param_s *int_param)
 {

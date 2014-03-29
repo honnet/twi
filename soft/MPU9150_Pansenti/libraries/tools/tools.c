@@ -1,4 +1,4 @@
-#include "log.h" // TODO rename to tools.h
+#include "tools.h" // TODO rename to tools.h
 
 #ifdef DEBUG_PRINT
 void simple_uart_print_int(int i)

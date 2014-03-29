@@ -26,7 +26,7 @@
 #include "inv_mpu_dmp_motion_driver.h"
 #include "MPUQuaternion.h"
 #include "RTC1_ms_timer.h"
-#include "log.h"
+#include "tools.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //

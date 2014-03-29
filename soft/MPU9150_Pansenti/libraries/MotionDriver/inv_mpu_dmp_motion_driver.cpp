@@ -22,7 +22,7 @@
 #include "inv_mpu.h"
 #include "inv_mpu_dmp_motion_driver.h"
 #include "dmpKey.h"
-#include "nrf_delay.h"
+#include "tools.h"
 
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
@@ -32,9 +32,6 @@
  * delay_ms(unsigned long num_ms)
  * get_ms(unsigned long *count)
  */
-
-#define delay_ms       nrf_delay_ms
-#define delay          nrf_delay_ms
 
 #define log_i(...)     do {} while (0)
 #define log_e(...)     do {} while (0)

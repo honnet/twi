@@ -17,7 +17,7 @@ INCLUDEDIRS += $(MPU_LIBS)/MotionDriver
 INCLUDEDIRS += $(MPU_LIBS)/CalLib
 INCLUDEDIRS += $(MPU_LIBS)/RTC
 INCLUDEDIRS += $(MPU_LIBS)/flash
-INCLUDEDIRS += $(MPU_LIBS)/log
+INCLUDEDIRS += $(MPU_LIBS)/tools
 
 
 CPU    := cortex-m0
@@ -59,7 +59,7 @@ SRC += $(MPU_LIBS)/MotionDriver/inv_mpu_dmp_motion_driver.cpp
 SRC += $(MPU_LIBS)/CalLib/CalLib.cpp
 SRC += $(MPU_LIBS)/RTC/RTC1_ms_timer.cpp
 SRC += $(MPU_LIBS)/flash/flash.c
-SRC += $(MPU_LIBS)/log/log.c
+SRC += $(MPU_LIBS)/tools/tools.c
 
 
 ASSEMBLY_SRC += $(NRF51_SRC)/templates/gcc/gcc_startup_nrf51.s
