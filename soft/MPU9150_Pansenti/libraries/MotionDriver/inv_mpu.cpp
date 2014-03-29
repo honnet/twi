@@ -584,11 +584,15 @@ int mpu_init(struct int_param_s *int_param)
     unsigned char data[6], rev;
     int errCode;
 
+  DP_int_ln(3);
+
     /* Reset device. */
     data[0] = BIT_RESET;
     if (i2c_write(st->hw->addr, st->reg->pwr_mgmt_1, 1, data))
         return -1;
     delay_ms(100);
+
+  DP_int_ln(4);
 
     /* Wake up chip. */
     data[0] = 0x00;

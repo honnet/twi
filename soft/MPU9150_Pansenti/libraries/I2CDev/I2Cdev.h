@@ -46,6 +46,7 @@ THE SOFTWARE.
 #define _I2CDEV_H_
 
 #include <stdint.h>
+#include "tools.h"
 
 
 #define DEFAULT_READ_TIMEOUT 1000

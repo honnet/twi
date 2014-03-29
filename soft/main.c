@@ -33,10 +33,10 @@ void init(void)
     nrf_gpio_cfg_output(LED);
 
     DP_cnf(RTS_PIN_NUMBER, TX_PIN_NUMBER, CTS_PIN_NUMBER, RX_PIN_NUMBER, false);
-    DP_str("retval\n");
-    DP_int_ln(3);
+    DP_str("Starting IMU...\n");
 
     int retval = MPU.init(MPU_UPDATE_RATE, MPU_MAG_MIX_GYRO_AND_MAG, MAG_UPDATE_RATE, MPU_LPF_RATE); // start the MPU
+    DP_str("...retval: ");
     DP_int_ln(retval);
 }
 

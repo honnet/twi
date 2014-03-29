@@ -1,6 +1,8 @@
 #ifndef _TOOLS_H_
 #define _TOOLS_H_
 
+#include "nrf_gpio.h"
+#include "board.h"
 
 #include "nrf_delay.h"
 #define delay_ms(x) nrf_delay_ms(x)

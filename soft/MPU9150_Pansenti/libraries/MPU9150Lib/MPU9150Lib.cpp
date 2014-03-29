@@ -164,7 +164,7 @@ boolean MPU9150Lib::init(int mpuRate, int magMix, int magRate, int lpf)
 
   // get calibration data if it's there
 
-  if (calLibRead(m_device, &m_calData)) {                 // use calibration data if it's there and wanted
+  if (0) { // (calLibRead(m_device, &m_calData)) { // use calibration data if it's there and wanted
     m_useMagCalibration &= m_calData.magValid == 1;
     m_useAccelCalibration &= m_calData.accelValid == 1;
 
@@ -202,7 +202,11 @@ boolean MPU9150Lib::init(int mpuRate, int magMix, int magRate, int lpf)
 	  DP_str("Using accel cal\n");
 #endif
 
+  DP_int_ln(0);
+
   mpu_init_structures();
+
+  DP_int_ln(1);
 
   // Not using interrupts so set up this structure to keep the driver happy
 
@@ -211,6 +215,9 @@ boolean MPU9150Lib::init(int mpuRate, int magMix, int magRate, int lpf)
   int_param.lp_exit = 0;
   int_param.active_low = 1;
   result = mpu_init(&int_param);
+
+  DP_int_ln(1);
+
   if (result != 0) {
 #ifdef MPULIB_DEBUG
      DP_str("mpu_init failed with code: "); DP_int_ln(result);
