@@ -9,7 +9,7 @@
 
 // UART:
 #define TX_PIN_NUMBER   0        /* 1.8V ! */
-#define RX_PIN_NUMBER   1        /* 1.8V ! */
+#define RX_PIN_NUMBER   7        /* TMP */
 #define CTS_PIN_NUMBER  2        /* not connected, for retro-compatibility only */
 #define RTS_PIN_NUMBER  3        /* not connected, for retro-compatibility only */
 #define HWFC            false    /* no hardware flow control */
