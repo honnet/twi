@@ -5,22 +5,11 @@
 #include "board.h"
 #include "nrf_delay.h"
 #include "MPU9150.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "nrf_esb.h"
-
-#ifdef __cplusplus
-}
-#endif
-
+#include "radio_config.h"
 
 void simple_uart_print_int(int i);
 
 #define DEBUG_PRINT
-
 #ifdef DEBUG_PRINT
 #  include <stdlib.h> // sprintf()
 #  include "simple_uart.h"
@@ -33,13 +22,28 @@ void simple_uart_print_int(int i);
 #  define DP_str(x)
 #endif
 
-#define PIPE_NUMBER 0
-#define TX_PAYLOAD_LENGTH 1
-
 // Data and acknowledgement payloads
 static uint8_t my_tx_payload[TX_PAYLOAD_LENGTH];                ///< Payload to send to PRX.
 
 MPU9150 accelGyroMag;
+
+/////////////////////////////////////////////////////////////////////////////
+
+void radio_init(void)
+{
+    /* Start 16 MHz crystal oscillator */
+    NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
+    NRF_CLOCK->TASKS_HFCLKSTART = 1;
+
+    /* Wait for the external oscillator to start up */
+    while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0) { }
+
+    // Set radio configuration parameters
+    radio_configure();
+
+    // Set payload pointer
+    NRF_RADIO->PACKETPTR = (uint32_t)packet;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -58,20 +62,19 @@ void init(void)
             "MPU9150 connection failed\r\n" );
 
     // Initialize ESB
-    nrf_esb_init(NRF_ESB_MODE_PTX);
-    nrf_esb_set_output_power(NRF_ESB_OUTPUT_POWER_4_DBM); // default 0
+    radio_init();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 uint8_t poll_sensors(void) {
-    const int16_t threshold = 1 << 13; // 2**13 = 0.5g because [-2**15, 2**15] = [-2g, 2g]
+    const int8_t threshold = 1 << 5; // 2**5 = 0.5g because [-2**7, 2**7] = [-2g, 2g]
 
-    static uint8_t old_bitmap = 0; // button(MSB), -y, y, -x, x (LSB)
+//    static uint8_t old_bitmap = 0; // button(MSB), -y, y, -x, x (LSB)
     uint8_t bitmap = 0;
 
-    int16_t x = accelGyroMag.getAccelerationX();
-    int16_t y = accelGyroMag.getAccelerationY();
+    int8_t x = accelGyroMag.getAccelerationX() >> 8;
+    int8_t y = accelGyroMag.getAccelerationY() >> 8;
 
     if (x > threshold)       bitmap |= 1 << 0;
     else if (x < -threshold) bitmap |= 1 << 1;
@@ -87,34 +90,51 @@ uint8_t poll_sensors(void) {
     DP_int(y);
     DP_str("\t");
     for (int i = 0; i < 64; i++) { // 16bit => 6bits (max = 63, min = -64)
-        if ( i < (abs(y) >> 9) ) DP_str("y");
+        if ( i < abs(y>>1) ) DP_str("y");
         else                     DP_str(" ");
     }
     DP_str("|\r\n");
 
-    if (old_bitmap && old_bitmap != bitmap)
-        return bitmap;
+    if (1) // old_bitmap && old_bitmap != bitmap)
+        return y;// bitmap;
     else
         return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
+volatile bool ready_flag = 1;
+volatile bool error_flag = 0;
 
 int main(void)
 {
     init();
 
+    nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
+    nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
+
     while(1)
     {
-        my_tx_payload[0] = poll_sensors();
-        nrf_gpio_pin_write(LED, (my_tx_payload[0] != 0));
+        my_tx_payload[0]++; //= poll_sensors();
+
+        nrf_gpio_pin_set(LED);
+        nrf_esb_enable();
+        nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
+        nrf_gpio_pin_clear(LED);
+/*
+        while (!ready_flag); // wait
+        ready_flag = 0;
 
         // Add packet into TX queue
         if (my_tx_payload[0]) {
-            nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
             nrf_esb_enable();
+            nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
         }
 
+        if (error_flag) {
+            DP_str("Error!!!\n");
+            error_flag = 0;
+        }
+*/
         nrf_delay_ms(30);
     }
 }
@@ -125,19 +145,17 @@ int main(void)
 // If the transmission failed, send a new packet.
 void nrf_esb_tx_failed(uint32_t tx_pipe){
     (void)nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
+    nrf_esb_flush_tx_fifo(PIPE_NUMBER);
+    error_flag = 1;
 }
 
+void nrf_esb_tx_success(uint32_t tx_pipe, int32_t rssi){
+    ready_flag = 1;
+}
 
 // Callbacks not needed in this example.
-void nrf_esb_tx_success(uint32_t tx_pipe, int32_t rssi){
-    // everything is in the main loop
-}
-void nrf_esb_rx_data_ready(uint32_t rx_pipe, int32_t rssi){
-    // nothing
-}
-void nrf_esb_disabled(void) {
-    // nothing
-}
+void nrf_esb_rx_data_ready(uint32_t rx_pipe, int32_t rssi){ }
+void nrf_esb_disabled(void) { }
 
 /////////////////////////////////////////////////////////////////////////////
 
