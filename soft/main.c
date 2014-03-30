@@ -23,7 +23,7 @@ void simple_uart_print_int(int i);
 #endif
 
 // Data and acknowledgement payloads
-static uint8_t my_tx_payload[TX_PAYLOAD_LENGTH];                ///< Payload to send to PRX.
+static uint8_t my_tx_payload[PACKET_STATIC_LENGTH];
 
 MPU9150 accelGyroMag;
 
@@ -42,7 +42,28 @@ void radio_init(void)
     radio_configure();
 
     // Set payload pointer
-    NRF_RADIO->PACKETPTR = (uint32_t)packet;
+    NRF_RADIO->PACKETPTR = (uint32_t)my_tx_payload;
+}
+
+void radio_send()
+{
+    // send the packet:
+    NRF_RADIO->EVENTS_READY = 0U;
+    NRF_RADIO->TASKS_TXEN = 1;
+    while (NRF_RADIO->EVENTS_READY == 0U)
+    {
+    }
+    NRF_RADIO->TASKS_START = 1U;
+    NRF_RADIO->EVENTS_END = 0U;
+    while(NRF_RADIO->EVENTS_END == 0U)
+    {
+    }
+    NRF_RADIO->EVENTS_DISABLED = 0U;
+    // Disable radio
+    NRF_RADIO->TASKS_DISABLE = 1U;
+    while(NRF_RADIO->EVENTS_DISABLED == 0U)
+    {
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -109,53 +130,15 @@ int main(void)
 {
     init();
 
-    nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
-    nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
-
     while(1)
     {
-        my_tx_payload[0]++; //= poll_sensors();
+        my_tx_payload[0] = poll_sensors();
+        radio_send();
 
-        nrf_gpio_pin_set(LED);
-        nrf_esb_enable();
-        nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
-        nrf_gpio_pin_clear(LED);
-/*
-        while (!ready_flag); // wait
-        ready_flag = 0;
-
-        // Add packet into TX queue
-        if (my_tx_payload[0]) {
-            nrf_esb_enable();
-            nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
-        }
-
-        if (error_flag) {
-            DP_str("Error!!!\n");
-            error_flag = 0;
-        }
-*/
-        nrf_delay_ms(30);
+        nrf_gpio_pin_toggle(LED);
+        nrf_delay_ms(50);
     }
 }
-
-
-/////////////////////////////////////////////////////////////////////////////
-
-// If the transmission failed, send a new packet.
-void nrf_esb_tx_failed(uint32_t tx_pipe){
-    (void)nrf_esb_add_packet_to_tx_fifo(PIPE_NUMBER, my_tx_payload, TX_PAYLOAD_LENGTH, NRF_ESB_PACKET_USE_ACK);
-    nrf_esb_flush_tx_fifo(PIPE_NUMBER);
-    error_flag = 1;
-}
-
-void nrf_esb_tx_success(uint32_t tx_pipe, int32_t rssi){
-    ready_flag = 1;
-}
-
-// Callbacks not needed in this example.
-void nrf_esb_rx_data_ready(uint32_t rx_pipe, int32_t rssi){ }
-void nrf_esb_disabled(void) { }
 
 /////////////////////////////////////////////////////////////////////////////
 

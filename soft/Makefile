@@ -9,12 +9,10 @@ NRF51_SRC     := $(NRF51_SDK)/Nordic/nrf51822/Source
 
 INCLUDEDIRS = $(NRF51_INCLUDE)
 INCLUDEDIRS += $(NRF51_INCLUDE)/gcc
-INCLUDEDIRS += $(NRF51_INCLUDE)/esb
 INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/twi_sw_master_example
+INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/radio_example
 INCLUDEDIRS += ./MPU9150
 INCLUDEDIRS += ./I2Cdev
-
-LIBRARIES += $(NRF51_SDK)/Nordic/nrf51822/Lib/esb/gcc/esb_gcc.a
 
 
 CPU    := cortex-m0
@@ -31,7 +29,6 @@ CFLAGS += -Wall
 # For the Linker stage
 LDIRS  = /usr/arm-none-eabi/lib/armv6-m
 LDIRS += /usr/lib/gcc/arm-none-eabi/4.7.4/armv6-m
-LDIRS += $(NRF51_SDK)/Nordic/nrf51822/Lib/esb/gcc/
 TDIRS  = $(NRF51_SRC)/templates/gcc/gcc_nrf51_blank_xxaa.ld
 #TDIRS  = $(NRF51_SRC)/templates/gcc/gcc_nrf51_s110_xxaa.ld
 
@@ -48,6 +45,7 @@ SRC += $(NRF51_SRC)/templates/system_nrf51.c
 SRC += $(NRF51_SRC)/nrf_delay/nrf_delay.c
 SRC += $(NRF51_SRC)/simple_uart/simple_uart.c
 SRC += $(NRF51_SRC)/twi_master/twi_hw_master.c
+SRC += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/radio_example/radio_config.c
 SRC += ./MPU9150/MPU9150.cpp
 SRC += ./I2Cdev/I2Cdev.cpp
 
@@ -65,7 +63,7 @@ build: main.bin main.hex
 
 main.out: $(OBJ)
 	@echo "\n Linking compiled file. Output will be saved to: " $@
-	$(CC) $(notdir $(OBJ)) $(LIBRARIES) -o $@ $(LFLAGS)
+	$(CC) $(notdir $(OBJ)) -o $@ $(LFLAGS)
 
 
 main.bin: main.out
