@@ -107,7 +107,7 @@ void init(void)
 /////////////////////////////////////////////////////////////////////////////
 
 uint8_t poll_sensors(void) {
-    const int8_t threshold = 1 << 4; // 2**4 = 0.25g because [-2**7, 2**7] = [-2g, 2g]
+    const int8_t threshold = 24; // note: [-128, 127] <=> [-2g, 2g]
 
     uint8_t bitmap = 0;
 
@@ -166,17 +166,22 @@ int main(void)
         radio_send(bitmap);
 
         actuate(bitmap);
-        nrf_delay_ms(50);
-        nrf_gpio_pin_toggle(LED);
+
+        nrf_gpio_pin_set(LED);
+        nrf_delay_ms(1); // just enough to know if we're frozen
+        nrf_gpio_pin_clear(LED);
+        nrf_delay_ms(49);
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#ifdef DEBUG_PRINT
 void simple_uart_print_int(int i)
 {
     char buf[12]; // 2**32 = 4G => sign + 10 numbers + '\0'
     sprintf(buf, "%d" , i);
     simple_uart_putstring((const uint8_t *)buf);
 }
+#endif
 
