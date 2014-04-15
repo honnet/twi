@@ -3,9 +3,9 @@
 CC            := arm-none-eabi-g++
 OBJCOPY       := arm-none-eabi-objcopy
 
-NRF51_SDK     := /opt/nrf51sdk
-NRF51_INCLUDE := $(NRF51_SDK)/Nordic/nrf51822/Include
-NRF51_SRC     := $(NRF51_SDK)/Nordic/nrf51822/Source
+NRF51_SDK     := ../nrf51822
+NRF51_INCLUDE := $(NRF51_SDK)/Include
+NRF51_SRC     := $(NRF51_SDK)/Source
 
 INCLUDEDIRS = $(NRF51_INCLUDE)
 INCLUDEDIRS += $(NRF51_INCLUDE)/gcc
