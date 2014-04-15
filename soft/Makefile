@@ -9,11 +9,10 @@ NRF51_SRC     := $(NRF51_SDK)/Source
 
 INCLUDEDIRS = $(NRF51_INCLUDE)
 INCLUDEDIRS += $(NRF51_INCLUDE)/gcc
-INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/twi_sw_master_example
-INCLUDEDIRS += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/radio_example
+INCLUDEDIRS += $(NRF51_SDK)/Board/nrf6310/twi_sw_master_example
+INCLUDEDIRS += $(NRF51_SDK)/Board/nrf6310/radio_example
 INCLUDEDIRS += ./MPU9150
 INCLUDEDIRS += ./I2Cdev
-
 
 CPU    := cortex-m0
 DEFINE  = NRF51
