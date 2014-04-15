@@ -61,20 +61,20 @@ all: begin gcc_version build end
 build: main.bin main.hex
 
 main.out: $(OBJ)
-	@echo "\n Linking compiled file. Output will be saved to: " $@
+	@echo "\nLinking compiled file. Output will be saved to: " $@
 	$(CC) $(notdir $(OBJ)) -o $@ $(LFLAGS)
 
 
 main.bin: main.out
-	@echo "\n Making binary file. Output will be saved to: " $@
+	@echo "\nMaking binary file. Output will be saved to: " $@
 	$(OBJCOPY) -O binary $< $@
 
 main.hex: main.out
-	@echo "\n Making hex file. Output will be saved to: " $@
+	@echo "\nMaking hex file. Output will be saved to: " $@
 	$(OBJCOPY) -O ihex $< $@
 
 upload: all
-	@echo "\n Uploading file to MCU: "
+	@echo "\nUploading file to MCU: "
 	sed  's#\[\[--filename--\]\]#$(PWD)/main.bin#' segger/burn-template.seg > burn.seg
 	./segger/segger.sh $(PWD)/burn.seg || echo Done.
 
@@ -104,15 +104,15 @@ gcc_version:
 
 # General Rule for compiling C source files
 %.o : %.c
-	@echo "\n Compiling: " $(notdir $<)
-	$(CC) $(CFLAGS) -c $< -o $(notdir $@)
+	@echo "Compiling: " $(notdir $<)
+	@$(CC) $(CFLAGS) -c $< -o $(notdir $@)
 
 %.o : %.cpp
-	@echo "\n Compiling: " $(notdir $<)
-	$(CC) $(CFLAGS) -c $< -o $(notdir $@)
+	@echo "Compiling: " $(notdir $<)
+	@$(CC) $(CFLAGS) -c $< -o $(notdir $@)
 
 # General Rule for compiling assembly source files
 %.o : %.s
-	@echo "\n Compiling: " $(notdir $<)
-	$(CC) $(CFLAGS) -c $< -o $(notdir $@)
+	@echo "Compiling: " $(notdir $<)
+	@$(CC) $(CFLAGS) -c $< -o $(notdir $@)
 
