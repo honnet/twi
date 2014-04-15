@@ -44,7 +44,7 @@ SRC += $(NRF51_SRC)/templates/system_nrf51.c
 SRC += $(NRF51_SRC)/nrf_delay/nrf_delay.c
 SRC += $(NRF51_SRC)/simple_uart/simple_uart.c
 SRC += $(NRF51_SRC)/twi_master/twi_hw_master.c
-SRC += $(NRF51_SDK)/Nordic/nrf51822/Board/nrf6310/radio_example/radio_config.c
+SRC += $(NRF51_SDK)/Board/nrf6310/radio_example/radio_config.c
 SRC += ./MPU9150/MPU9150.cpp
 SRC += ./I2Cdev/I2Cdev.cpp
 
