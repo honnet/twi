@@ -63,31 +63,31 @@ all: begin gcc_version build end
 build: main.bin main.hex
 
 main.out: $(OBJ)
-	@echo "\nLinking compiled file. Output will be saved to: " $@
+	@$(ECHO) "\nLinking compiled file. Output will be saved to: " $@
 	$(CC) $(notdir $(OBJ)) -o $@ $(LFLAGS)
 
 
 main.bin: main.out
-	@echo "\nMaking binary file. Output will be saved to: " $@
+	@$(ECHO) "\nMaking binary file. Output will be saved to: " $@
 	$(OBJCOPY) -O binary $< $@
 
 main.hex: main.out
-	@echo "\nMaking hex file. Output will be saved to: " $@
+	@$(ECHO) "\nMaking hex file. Output will be saved to: " $@
 	$(OBJCOPY) -O ihex $< $@
 
 upload: all
-	@echo "\nUploading file to MCU: "
+	@$(ECHO) "\nUploading file to MCU: "
 	sed  's#\[\[--filename--\]\]#$(PWD)/main.bin#' segger/burn-template.seg > burn.seg
 	./segger/segger.sh $(PWD)/burn.seg || echo Done.
 
 erase-all:
-	@/bin/echo -e "device nrf51822\nw4 4001e504 2\nw4 4001e50c 1\nw4 4001e514 1\nr\nexit\n" > erase-all.jlink
 	JLinkExe -if swd -speed 1000 erase-all.jlink || echo Done
+	@$(ECHO) "device nrf51822\nw4 4001e504 2\nw4 4001e50c 1\nw4 4001e514 1\nr\nexit\n" > erase-all.jlink
 
 recover:
-	@echo "!!!!!!!!!!! erase !!!!!!!!!!\n"
+	@$(ECHO) "!!!!!!!!!!! erase !!!!!!!!!!\n"
 	make erase-all
-	@echo "\n!!!!!!!!!!! reflash !!!!!!!!!!!\n"
+	@$(ECHO) "\n!!!!!!!!!!! reflash !!!!!!!!!!!\n"
 	make upload
 
 clean:
@@ -95,26 +95,26 @@ clean:
 
 # Eye Candy
 begin:
-	@echo "---------- begin ----------"
+	@$(ECHO) "---------- begin ----------"
 
 end:
-	@echo "\n----------- end -----------"
+	@$(ECHO) "\n----------- end -----------"
 
 gcc_version:
-	@echo
+	@$(ECHO)
 	@$(CC) --version
 
 # General Rule for compiling C source files
 %.o : %.c
-	@echo "Compiling: " $(notdir $<)
+	@$(ECHO) "Compiling: " $(notdir $<)
 	@$(CC) $(CFLAGS) -c $< -o $(notdir $@)
 
 %.o : %.cpp
-	@echo "Compiling: " $(notdir $<)
+	@$(ECHO) "Compiling: " $(notdir $<)
 	@$(CC) $(CFLAGS) -c $< -o $(notdir $@)
 
 # General Rule for compiling assembly source files
 %.o : %.s
-	@echo "Compiling: " $(notdir $<)
+	@$(ECHO) "Compiling: " $(notdir $<)
 	@$(CC) $(CFLAGS) -c $< -o $(notdir $@)
 
