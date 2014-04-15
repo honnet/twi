@@ -1,7 +1,9 @@
 # Adapted from: stackoverflow.com/questions/16443790/makefile-for-nrf51sdk
 
-CC            := arm-none-eabi-g++
-OBJCOPY       := arm-none-eabi-objcopy
+CC          := arm-none-eabi-g++
+OBJCOPY     := arm-none-eabi-objcopy
+JLINK       := jlinkexe
+ECHO        := echo
 
 NRF51_SDK     := ../nrf51822
 NRF51_INCLUDE := $(NRF51_SDK)/Include
