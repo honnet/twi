@@ -78,11 +78,11 @@ main.hex: main.out
 upload: all
 	@$(ECHO) "\nUploading file to MCU: "
 	sed  's#\[\[--filename--\]\]#$(PWD)/main.bin#' segger/burn-template.seg > burn.seg
-	./segger/segger.sh $(PWD)/burn.seg || echo Done.
+	$(JLINK) burn.seg -if SWD || echo Done.
 
 erase-all:
-	JLinkExe -if swd -speed 1000 erase-all.jlink || echo Done
 	@$(ECHO) "device nrf51822\nw4 4001e504 2\nw4 4001e50c 1\nw4 4001e514 1\nr\nexit\n" > erase-all.jlink
+	$(JLINK) -if swd -speed 1000 erase-all.jlink || echo Done
 
 recover:
 	@$(ECHO) "!!!!!!!!!!! erase !!!!!!!!!!\n"
