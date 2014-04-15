@@ -26,8 +26,8 @@ CFLAGS += $(patsubst %,-I%, $(INCLUDEDIRS))
 CFLAGS += -Wall
 
 # For the Linker stage
-LDIRS  = /usr/arm-none-eabi/lib/armv6-m
-LDIRS += /usr/lib/gcc/arm-none-eabi/4.7.4/armv6-m
+LDIRS  = ../arm-none-eabi/lib/armv6-m
+LDIRS = $(NRF51_SRC)/templates/gcc/
 TDIRS  = $(NRF51_SRC)/templates/gcc/gcc_nrf51_blank_xxaa.ld
 #TDIRS  = $(NRF51_SRC)/templates/gcc/gcc_nrf51_s110_xxaa.ld
 
