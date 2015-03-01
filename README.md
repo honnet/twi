@@ -1,5 +1,11 @@
-Welcome !
+Warning !
 =========
+
+**This repo is not maintained anymore, here is the new one:**
+
+https://github.com/TangibleDisplay/twiz-fw
+
+- - -
 
 ![twi](https://raw.github.com/honnet/twi/master/twi.png)
 
