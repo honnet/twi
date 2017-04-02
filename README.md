@@ -3,7 +3,7 @@ Warning !
 
 **This repo is not maintained anymore, here is the new one:**
 
-https://github.com/TangibleDisplay/twiz-fw
+https://github.com/medialablasalle/twiz
 
 - - -
 
@@ -27,11 +27,11 @@ How?
 
 Before testing on the custom PCB a cheap dev board can be used:
 
-http://www.aliexpress.com/snapshot/251611169.html
+https://www.aliexpress.com/item/NRF51822-2-4G-Wireless-Module-Wireless-Communication-Module-Bluetooth-module-zigbee-module-DMX512/32260100115.html
 
 ...this cheap programmer is fine too:
 
-http://www.aliexpress.com/snapshot/251687009.html
+https://www.aliexpress.com/item/NEW-OB-ARM-Debugger-Programmer-Downloader-Replace-V8-SWD-M74/32668221105.html
 
 Once everything is gathered, most of the nRF51822 bringup procedure can be made
 thanks to this tuto:
@@ -47,7 +47,8 @@ Instead, the one Linaro one can be used (from the official ARM developers):
 
 https://launchpad.net/gcc-arm-embedded
 
-**2)** If you miss the Nordic files you can use git to travel in the past:
+**2)** [This section is not useful anymore, Nordic opened access to all the useful files]
+If you miss the Nordic files you can use git to travel in the past:
 
 https://github.com/Sproutling/nRF51822-OSX-Sample
 
@@ -98,9 +99,9 @@ Bonus!
 
 http://youtu.be/sgKb9N6MPIM
 
-* Test IMU (video to come later):
+* Test IMU (video [here](http://hack.honnet.eu/twiz)):
 
-http://www.aliexpress.com/snapshot/252001193.html
+https://www.aliexpress.com/item/GY-9255-MPU-9255-Sensor-Module-Alternative-MPU9150-MPU9250/32480993227.html
 
 
 Enjoy!
@@ -109,7 +110,7 @@ Enjoy!
 A lot of awesome nRF51 repo are available on github or bitbucket, but feel free
 to ask if you need any help:
 
-Drix(a)TangibleDisplay.com
+contact(a)honnet.eu
 
 May the force be with you!
 
